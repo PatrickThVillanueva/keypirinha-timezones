@@ -1,0 +1,46 @@
+{
+    "timezones":[
+        {
+            "timezone": "UTC",
+            "desc": "Universal Time, Coordinated",
+            "difference_hours": 0,
+            "difference_minutes": 0,
+            "aliases": ["utc", "z", "zulu"]
+        },
+        {
+            "timezone": "GMT",
+            "desc": "Greenwich Mean Time",
+            "difference_hours": 0,
+            "difference_minutes": 0,
+            "aliases": ["gmt"]
+        },
+        {
+            "timezone": "CET",
+            "desc": "Central European Time",
+            "difference_hours": 1,
+            "difference_minutes": 0,
+            "aliases": ["cet"]
+        },
+        {
+            "timezone": "CEST",
+            "desc": "Central European Summer Time",
+            "difference_hours": 2,
+            "difference_minutes": 0,
+            "aliases": ["cest"]
+        },
+        {
+            "timezone": "PDT",
+            "desc": "Pacific Daylight Time",
+            "difference_hours": -7,
+            "difference_minutes": 0,
+            "aliases": ["pdt"]
+        },
+        {
+            "timezone": "PST",
+            "desc": "Pacific Summer Time",
+            "difference_hours": -8,
+            "difference_minutes": 0,
+            "aliases": ["pst"]
+        }
+    ]
+}
