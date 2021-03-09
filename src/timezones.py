@@ -28,6 +28,8 @@ class timezones(kp.Plugin):
     def __init__(self):
         super().__init__()
 
+#ex: 1AM EST
+#ex: 1:00 EST
 #ex: 9PM EST
 #ex: 10:24
 #ex: 13:37 CET
@@ -120,13 +122,10 @@ class timezones(kp.Plugin):
 
         source = self._source_data(user_input)
         destination = self._destination_data(source)
-
-        suggestions = []
         if(self.TIME_FORMAT_PICKED == "ampm"):
-            suggestions = self._destination_ampm(source, destination)
+            self.set_suggestions(self._destination_ampm(source, destination), kp.Match.ANY, kp.Sort.NONE)
         else:
-            suggestions = self._destination_24h(source, destination)
-        self.set_suggestions(suggestions, kp.Match.ANY, kp.Sort.NONE)
+            self.set_suggestions(self._destination_24h(source, destination), kp.Match.ANY, kp.Sort.NONE)
         pass
 
     def on_execute(self, item, action):
@@ -134,10 +133,10 @@ class timezones(kp.Plugin):
 
     def _destination_24h(self, source, destination):
         additional = ''
-        hours = int(source['hour'])
+        hours = int(destination["hour"])
         if (destination['hour'] > 23):
             additional = '(Next day)'
-            hours = 24 - hours
+            hours = abs(24 - hours)
         elif (destination['hour'] < 0):
             additional = '(Previous day)'
             hours = hours + 24
@@ -148,6 +147,7 @@ class timezones(kp.Plugin):
         dif = destination["difference"]
         if (dif >= 0):
             dif = f'+{dif}'
+            
         suggestions = []
         suggestions.append(self.create_item(
             category=self.ITEMCAT_RESULT,
@@ -159,6 +159,7 @@ class timezones(kp.Plugin):
 
         return suggestions
 
+    #12AM = 0:00
     def _destination_ampm(self, source, destination):
         output_result = ''
         output_meridiem = source['meridiem']
@@ -194,22 +195,21 @@ class timezones(kp.Plugin):
 
         difference_hours = input_timezone['difference_hours'] - output_timezone['difference_hours']
         difference_minutes = input_timezone['difference_minutes'] - output_timezone['difference_minutes']
-        print(source['hour'])
-        hours = int(source['hour']) - difference_hours
-        minutes = int(source['min']) - difference_minutes
+        hours = int(source['hour']) + difference_hours
+        minutes = int(source['min']) + difference_minutes
+        
         response = dict()
         response['min'] = minutes
         response['hour'] = hours
         response['timezone'] = output_timezone['timezone']
         response['difference'] = difference_hours
-        print(response)
         return response
 
     def _source_data(self, user_input):
         response = dict()
-        response['min'] = "00"
-        response['hour'] = "0"
-        response['meridiem'] = "am"
+        response['min'] = '00'
+        response['hour'] = '0'
+        response['meridiem'] = ''
         response['timezone'] = self.TIME_ZONE_PICKED
         response['timeformat'] = self.TIME_FORMAT_PICKED
 
@@ -225,15 +225,16 @@ class timezones(kp.Plugin):
         if (re.search(self._am_pm_regex(), user_input)):
             r1 = re.findall(self._am_pm_regex(), user_input)
             response['meridiem'] = r1[-1]
+            response['timeformat'] = 'ampm'
 
-        if (re.search(self._24H_regex(), user_input)):
+        if (re.search(self._24H_regex(), user_input) and not re.search(self._am_pm_regex(), user_input)):
             r1 = re.findall(self._24H_regex(), user_input)
             response['hour'] = r1[0]
-            response['timeformat'] = "24H"
+            response['timeformat'] = '24H'
         elif (re.search(h12_regex, user_input)):
             r1 = re.findall(h12_regex, user_input)
-            response['hour'] = r1[0]
-            response['timeformat'] = "ampm"
+            response['hour'] = r1[0][0]
+            response['timeformat'] = 'ampm'
 
         if (re.search(self._timezones_regex(self.timezones), user_input)):
             r1 = re.findall(self._timezones_regex(self.timezones), user_input)

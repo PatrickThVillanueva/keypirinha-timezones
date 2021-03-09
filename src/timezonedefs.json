@@ -55,6 +55,13 @@
             "difference_hours": 9,
             "difference_minutes": 0,
             "aliases": ["jst"]
+        },
+        {
+            "timezone": "EST",
+            "desc": "Eastern Standard Time",
+            "difference_hours": -5,
+            "difference_minutes": 0,
+            "aliases": ["est"]
         }
     ]
 }
