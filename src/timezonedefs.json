@@ -41,6 +41,20 @@
             "difference_hours": -8,
             "difference_minutes": 0,
             "aliases": ["pst"]
+        },
+        {
+            "timezone": "PT",
+            "desc": "Pacific Time",
+            "difference_hours": -8,
+            "difference_minutes": 0,
+            "aliases": ["pt"]
+        },
+        {
+            "timezone": "JST",
+            "desc": "Japan Standard Time",
+            "difference_hours": 9,
+            "difference_minutes": 0,
+            "aliases": ["jst"]
         }
     ]
 }
