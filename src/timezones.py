@@ -28,13 +28,19 @@ class timezones(kp.Plugin):
     def __init__(self):
         super().__init__()
 
-#ex: 1AM EST
-#ex: 1:00 EST
-#ex: 9PM EST
-#ex: 10:24
-#ex: 13:37 CET
-#ex: 12:31PM CEST
-#ex: 23:59 PDT -> Next day for UTC!
+# 12:00
+# 12:50 AM
+# 12AM
+# 12AM
+#ex: 1AM PST
+#ex: 1:00 PST
+#ex: 0:00 PST
+#ex: 9PM PT
+#ex: 9PM JST
+#ex: 23:24 JST
+#ex: 12:37PM JST
+#ex: 12:37AM JST
+#ex: 23:59 PDT
     def read_defs(self, defs_file):
         defs = None
         try:
@@ -100,13 +106,11 @@ class timezones(kp.Plugin):
 
     def on_catalog(self):
         self._load_settings()
-        reg = self.get_regex(self.timezones)
-
         catalog = []
         catalog.append(self.create_item(
             category=kp.ItemCategory.KEYWORD,
             label="Timezone ",
-            short_desc="Convert timesonze",
+            short_desc="Convert timezone",
             target="timezone",
             args_hint=kp.ItemArgsHint.REQUIRED,
             hit_hint=kp.ItemHitHint.NOARGS))
@@ -140,6 +144,12 @@ class timezones(kp.Plugin):
         elif (destination['hour'] < 0):
             additional = '(Previous day)'
             hours = hours + 24
+        
+        if (source['timeformat'] == "ampm"):
+            if (source['meridiem'] == "am" and hours == 12):
+                hours = 0
+            elif (source['meridiem'] == "pm" and hours < 12):
+                hours = hours + 12
 
         output_hours = str(hours).zfill(2)
         output_min = str(destination["min"]).zfill(2)
@@ -160,8 +170,9 @@ class timezones(kp.Plugin):
         return suggestions
 
     #12AM = 0:00
+    #12PM = 12:00
     def _destination_ampm(self, source, destination):
-        output_result = ''
+        additional = ''
         output_meridiem = source['meridiem']
         output_hours = source['hour']
         
@@ -202,6 +213,7 @@ class timezones(kp.Plugin):
         response['min'] = minutes
         response['hour'] = hours
         response['timezone'] = output_timezone['timezone']
+        response['timeformat'] = self.TIME_FORMAT_PICKED
         response['difference'] = difference_hours
         return response
 
@@ -278,6 +290,7 @@ class timezones(kp.Plugin):
                 continue
             new_timezone = config_section[len("r/"):]
 
+        #TODO: Change to bool
         self.TIME_FORMAT_PICKED = settings.get_enum(
             "time_format", 
             "main", 
