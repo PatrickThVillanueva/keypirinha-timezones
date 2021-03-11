@@ -162,44 +162,22 @@ class timezones(kp.Plugin):
     def on_execute(self, item, action):
         pass
 
-# 00:00 PST => 8:00
-# 0:00 JST => 15:00
-# 1:00 PST => 9:00
-# 23:24 JST => 14:24
-
-# 12am PT => 8:00
-# 9PM PT => 5:00
-# 12AM JST => 15:00
-# 12:37AM JST => 15:37
-# 23:59 PDT => 7:59
-# 12 AM => 0:00 
-# 12AM => 0:00
-# 1AM PST => 9:00
-# 12:37PM JST => 3:37
     def _destination_24h(self, source, destination):
         additional = ''
         new_hours = int(source['hour'])
-        if (source['timeformat'] == '24H'):    
-            new_hours = new_hours + destination['difference_hours']
-            if (new_hours > 23):
-                additional = '(Next day)'
-                new_hours = abs(24 - new_hours)
-            elif (new_hours < 0):
-                additional = '(Previous day)'
-                new_hours = new_hours + 24
-        else:
+        if (source['timeformat'] == 'ampm'):
             if (source['meridiem'].lower() == "am" and new_hours == 12):
                 new_hours = 0
             elif (source['meridiem'].lower() == "pm" and new_hours < 12):
                 new_hours = new_hours + 12
-                
-            new_hours = new_hours + destination['difference_hours']
-            # if (source['meridiem'].lower() == "am" and new_hours < 12):
-            #     new_hours = new_hours + 12
-            #     additional = '(Previous day)'
-            # elif (source['meridiem'].lower() == "pm" and new_hours > 12):
-            #     additional = '(Next day)'
-            #     new_hours = abs(new_hours - 12)
+
+        new_hours = new_hours + destination['difference_hours']
+        if (new_hours > 23):
+            additional = '(Next day)'
+            new_hours = abs(24 - new_hours)
+        elif (new_hours < 0):
+            additional = '(Previous day)'
+            new_hours = new_hours + 24
 
         new_minutes = int(source['min'])
         new_minutes = new_minutes + destination['difference_minutes']
