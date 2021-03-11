@@ -13,15 +13,11 @@ class timezones(kp.Plugin):
     ITEMCAT_RESULT = kp.ItemCategory.USER_BASE + 1
     ITEMCAT_RELOAD_DEFS = kp.ItemCategory.USER_BASE + 2
 
-    ITEM_LABEL_PREFIX = "Time: "
-    
-    TIME_FORMAT_DEFAULT = "24H"
-    TIME_FORMAT_PICKED = TIME_FORMAT_DEFAULT
+    MILITARY_TIME_DEFAULT = True
+    MILITARY_TIME_PICKED = MILITARY_TIME_DEFAULT
 
     TIME_ZONE_DEFAULT = "UTC"
     TIME_ZONE_PICKED = TIME_ZONE_DEFAULT
-
-    TIME_FORMATS = ["24H", "AMPM"]
 
     TIMEZONEDEF_FILE = "timezonedefs.json"
 
@@ -29,37 +25,6 @@ class timezones(kp.Plugin):
         super().__init__()
 
 # reload of settings
-# To UTC 24h
-# 12am PT => 8:00
-# 9PM PT => 5:00
-# 12AM JST => 15:00
-# 12:37AM JST => 15:37
-# 23:59 PDT => 7:59
-# 12:50 AM => 0:50
-# 12 AM => 0:00 
-# 12AM => 0:00
-# 1AM PST => 9:00
-# 00:00 PST => 8:00
-# 0:00 JST => 15:00
-# 23:24 JST => 14:24
-# 12:37PM JST => 3:37
-# 1:00 PST => 9:00
-
-# To UTC 12h
-# 12:00 => 12:00PM
-# 1:00 PST => 9:00AM
-# 0:00 PST => 8:00AM
-# 0:00 JST => 3:00PM
-# 23:24 JST => 2:24PM
-# 12:37PM JST => 3:37AM
-# 23:59 PDT => 7:59
-# 12AM JST => 3:00PM
-# 12:37AM JST => 3:37PM
-# 12:50 AM => 12:50AM
-# 12am PT => 8:00AM
-# 1AM PST => 9:00AM
-# 9PM PT => 5:00AM
-
     def read_defs(self, defs_file):
         defs = None
         try:
@@ -153,24 +118,63 @@ class timezones(kp.Plugin):
         print()
         print(source)
         print(destination)
-        if(self.TIME_FORMAT_PICKED == "ampm"):
-            self.set_suggestions(self._destination_ampm(source, destination), kp.Match.ANY, kp.Sort.NONE)
-        else:
+        if(self.MILITARY_TIME_PICKED):
             self.set_suggestions(self._destination_24h(source, destination), kp.Match.ANY, kp.Sort.NONE)
+        else:
+            self.set_suggestions(self._destination_ampm(source, destination), kp.Match.ANY, kp.Sort.NONE)
         pass
 
     def on_execute(self, item, action):
         pass
 
     def _destination_24h(self, source, destination):
-        additional = ''
+        conversions = self._calculations(source, destination)
+        output_result = f'{conversions["hours"]}:{conversions["minutes"]} {conversions["timezone"]}'
+        suggestions = []
+        suggestions.append(self.create_item(
+            category=self.ITEMCAT_RESULT,
+            label=output_result,
+            short_desc=f'{conversions["hours"]}:{conversions["minutes"]} {conversions["timezone"]} ({conversions["difference_short"]}) {conversions["additional"]}',
+            target=output_result,
+            args_hint=kp.ItemArgsHint.FORBIDDEN,
+            hit_hint=kp.ItemHitHint.IGNORE))
+
+        return suggestions
+
+    def _destination_ampm(self, source, destination):
+        conversions = self._calculations(source, destination)
+        
+        meridiem = 'AM'
+        hours = conversions["hours"]
+        if (int(hours) > 12):
+            meridiem = 'PM'
+            hours = str(abs(12 -int(hours)))
+        elif (int(hours) == 12):
+            meridiem = 'PM'
+        elif (int(hours) == 0):
+            hours = '12'
+
+        output_result = f'{hours}:{conversions["minutes"]}{meridiem} {conversions["timezone"]}'
+        suggestions = []
+        suggestions.append(self.create_item(
+            category=self.ITEMCAT_RESULT,
+            label=output_result,
+            short_desc=f'{hours}:{conversions["minutes"]}{meridiem} {conversions["timezone"]} ({conversions["difference_short"]}) {conversions["additional"]}',
+            target=output_result,
+            args_hint=kp.ItemArgsHint.FORBIDDEN,
+            hit_hint=kp.ItemHitHint.IGNORE))
+
+        return suggestions
+
+    def _calculations(self, source, destination):
         new_hours = int(source['hour'])
-        if (source['timeformat'] == 'ampm'):
+        if (not bool(source['military'])):
             if (source['meridiem'].lower() == "am" and new_hours == 12):
                 new_hours = 0
             elif (source['meridiem'].lower() == "pm" and new_hours < 12):
                 new_hours = new_hours + 12
 
+        additional = ''
         new_hours = new_hours + destination['difference_hours']
         if (new_hours > 23):
             additional = '(Next day)'
@@ -179,7 +183,6 @@ class timezones(kp.Plugin):
             additional = '(Previous day)'
             new_hours = new_hours + 24
 
-        #TODO: Test these
         new_minutes = int(source['min'])
         new_minutes = new_minutes + destination['difference_minutes']
         if (new_minutes > 59):
@@ -188,64 +191,17 @@ class timezones(kp.Plugin):
         elif (new_minutes < 0):
             new_minutes = 60 + new_minutes
             new_hours = new_hours - 1
-
-        output_hours = str(new_hours)
-        output_min = str(new_minutes).zfill(2)
-        output_result = f'{output_hours}:{output_min} {destination["timezone"]}'
         dif = destination["difference_hours"]
-        if (dif >= 0):
-            dif = f'+{dif}'
-            
-        suggestions = []
-        suggestions.append(self.create_item(
-            category=self.ITEMCAT_RESULT,
-            label=output_result,
-            short_desc=f'{output_hours}:{output_min} {destination["timezone"]} ({dif}) {additional}',
-            target=output_result,
-            args_hint=kp.ItemArgsHint.FORBIDDEN,
-            hit_hint=kp.ItemHitHint.IGNORE))
+        dif = f'+{dif}' if (dif >= 0) else '{dif}'
 
-        return suggestions
+        response = dict()
+        response['hours'] = str(new_hours)
+        response['minutes'] = str(new_minutes).zfill(2)
+        response['timezone'] = destination["timezone"]
+        response['difference_short'] = dif
+        response['additional'] = additional
+        return response
 
-    #12AM = 0:00
-    #12PM = 12:00
-    def _destination_ampm(self, source, destination):
-        additional = ''
-        hours = int(destination["hour"])
-        meridiem = ''
-        if (source['timeformat'] == "24H"):
-            if (hours >= 12):
-                meridiem = "PM"
-            elif (hours >= 0 and hours < 12):
-                meridiem = "AM"
-            hours = abs(12 - hours)
-        else:
-            meridiem = source['meridiem']
-            if (hours > 12):
-                if (meridiem == "AM"):
-                    meridiem = "PM"
-                else:
-                    meridiem = "AM"
-                hours = abs(12 - hours)
-                additional = '(Next day)'
-        
-        output_hours = str(hours)
-        output_min = str(destination["min"]).zfill(2)
-        output_result = f'{output_hours}:{output_min}{meridiem} {destination["timezone"]}'
-        dif = destination["difference"]
-        if (dif >= 0):
-            dif = f'+{dif}'
-
-        suggestions = []
-        suggestions.append(self.create_item(
-            category=self.ITEMCAT_RESULT,
-            label=output_result,
-            short_desc=f'{output_hours}:{output_min}{meridiem} {destination["timezone"]} ({dif}) {additional}',
-            target=output_result,
-            args_hint=kp.ItemArgsHint.FORBIDDEN,
-            hit_hint=kp.ItemHitHint.IGNORE))
-
-        return suggestions
 
     def _find_timezone(self, timezone_to_find):
         filter_results = filter(lambda x: x['timezone'] == timezone_to_find, self.timezones)
@@ -260,7 +216,6 @@ class timezones(kp.Plugin):
         
         response = dict()
         response['timezone'] = output_timezone['timezone']
-        response['timeformat'] = self.TIME_FORMAT_PICKED
         response['difference_hours'] = difference_hours
         response['difference_minutes'] = difference_minutes
         return response
@@ -271,7 +226,7 @@ class timezones(kp.Plugin):
         response['hour'] = '0'
         response['meridiem'] = ''
         response['timezone'] = self.TIME_ZONE_PICKED
-        response['timeformat'] = self.TIME_FORMAT_PICKED
+        response['military'] = True
 
         h12 = self._12H_regex()
         minutes = self._minutes_regex()
@@ -285,16 +240,16 @@ class timezones(kp.Plugin):
         if (re.search(self._am_pm_regex(), user_input)):
             r1 = re.findall(self._am_pm_regex(), user_input)
             response['meridiem'] = r1[-1]
-            response['timeformat'] = 'ampm'
+            response['military'] = False
 
         if (re.search(self._24H_regex(), user_input) and not re.search(self._am_pm_regex(), user_input)):
             r1 = re.findall(self._24H_regex(), user_input)
             response['hour'] = r1[0]
-            response['timeformat'] = '24H'
+            response['military'] = True
         elif (re.search(h12_regex, user_input)):
             r1 = re.findall(h12_regex, user_input)
             response['hour'] = r1[0][0]
-            response['timeformat'] = 'ampm'
+            response['military'] = False
 
         if (re.search(self._timezones_regex(self.timezones), user_input)):
             r1 = re.findall(self._timezones_regex(self.timezones), user_input)
@@ -338,13 +293,10 @@ class timezones(kp.Plugin):
                 continue
             new_timezone = config_section[len("r/"):]
 
-        #TODO: Change to bool
-        self.TIME_FORMAT_PICKED = settings.get_enum(
-            "time_format", 
-            "main", 
-            fallback=self.TIME_FORMAT_DEFAULT, 
-            enum=self.TIME_FORMATS
-        ).lower()
+        self.MILITARY_TIME_PICKED = settings.get_bool(
+            "use_military_time", "main", 
+            self.MILITARY_TIME_DEFAULT
+        )
 
         self.TIME_ZONE_PICKED = settings.get_stripped(
             "output_timezone",
