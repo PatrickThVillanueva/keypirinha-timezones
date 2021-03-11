@@ -24,7 +24,6 @@ class timezones(kp.Plugin):
     def __init__(self):
         super().__init__()
 
-# reload of settings
     def read_defs(self, defs_file):
         defs = None
         try:
@@ -91,11 +90,11 @@ class timezones(kp.Plugin):
     def on_catalog(self):
         self._load_settings()
         catalog = []
-#TODO Insert the actual difference to TIME_ZONE_PICKED
+        output_timezone = self._find_timezone(self.TIME_ZONE_PICKED)
         for t in self.timezones:
-            diff = t['difference_hours']
+            diff = t['difference_hours'] - output_timezone['difference_hours']
             if (diff > 0):
-                diff = f"+{t['difference_hours']}"
+                diff = f"+{diff}"
             catalog.append(self.create_item(
                 category=kp.ItemCategory.KEYWORD,
                 label=f"Timezone: {t['timezone']}",
@@ -115,9 +114,6 @@ class timezones(kp.Plugin):
 
         source = self._source_data(user_input)
         destination = self._destination_data(source)
-        print()
-        print(source)
-        print(destination)
         if(self.MILITARY_TIME_PICKED):
             self.set_suggestions(self._destination_24h(source, destination), kp.Match.ANY, kp.Sort.NONE)
         else:
@@ -192,7 +188,7 @@ class timezones(kp.Plugin):
             new_minutes = 60 + new_minutes
             new_hours = new_hours - 1
         dif = destination["difference_hours"]
-        dif = f'+{dif}' if (dif >= 0) else '{dif}'
+        dif = f'+{dif}' if (dif >= 0) else f'{dif}'
 
         response = dict()
         response['hours'] = str(new_hours)
@@ -201,7 +197,6 @@ class timezones(kp.Plugin):
         response['difference_short'] = dif
         response['additional'] = additional
         return response
-
 
     def _find_timezone(self, timezone_to_find):
         filter_results = filter(lambda x: x['timezone'] == timezone_to_find, self.timezones)
@@ -264,7 +259,6 @@ class timezones(kp.Plugin):
         ampm = self._am_pm_regex()
         timezones = self._timezones_regex(time_zones_array)
         INPUT_PARSER = f'^(({h24}{minutes}?)|({h12}{minutes}?{ampm}))+\s*{timezones}?$'
-
         return re.compile(INPUT_PARSER)
 
     def _minutes_regex(self):
@@ -286,12 +280,10 @@ class timezones(kp.Plugin):
 
     def _load_settings(self):
         settings = self.load_settings()
-
-        sections = self.load_settings().sections()
-        for config_section in sections:
+        for config_section in settings.sections():
             if config_section.startswith("#") or not config_section.lower().startswith("timezone/"):
                 continue
-            new_timezone = config_section[len("r/"):]
+            new_timezone = config_section[len("timezone/"):]
 
         self.MILITARY_TIME_PICKED = settings.get_bool(
             "use_military_time", "main", 
@@ -299,6 +291,6 @@ class timezones(kp.Plugin):
         )
 
         self.TIME_ZONE_PICKED = settings.get_stripped(
-            "output_timezone",
+            "output_timezone", "main",
             fallback=self.TIME_ZONE_DEFAULT)
         pass
