@@ -179,6 +179,7 @@ class timezones(kp.Plugin):
             additional = '(Previous day)'
             new_hours = new_hours + 24
 
+        #TODO: Test these
         new_minutes = int(source['min'])
         new_minutes = new_minutes + destination['difference_minutes']
         if (new_minutes > 59):
