@@ -90,18 +90,18 @@ class timezones(kp.Plugin):
     def on_catalog(self):
         self._load_settings()
         catalog = []
-        output_timezone = self._find_timezone(self.TIME_ZONE_PICKED)
-        for t in self.timezones:
-            diff = t['difference_hours'] - output_timezone['difference_hours']
-            if (diff > 0):
-                diff = f"+{diff}"
-            catalog.append(self.create_item(
-                category=kp.ItemCategory.KEYWORD,
-                label=f"Timezone: {t['timezone']}",
-                short_desc=f"{t['desc']} ({self.TIME_ZONE_PICKED} {diff})",
-                target=t['timezone'],
-                args_hint=kp.ItemArgsHint.FORBIDDEN,
-                hit_hint=kp.ItemHitHint.NOARGS))
+        # output_timezone = self._find_timezone(self.TIME_ZONE_PICKED)
+        # for t in self.timezones:
+        #     diff = t['difference_hours'] - output_timezone['difference_hours']
+        #     if (diff > 0):
+        #         diff = f"+{diff}"
+        #     catalog.append(self.create_item(
+        #         category=kp.ItemCategory.KEYWORD,
+        #         label=f"Timezone: {t['timezone']}",
+        #         short_desc=f"{t['desc']} ({self.TIME_ZONE_PICKED} {diff})",
+        #         target=t['timezone'],
+        #         args_hint=kp.ItemArgsHint.FORBIDDEN,
+        #         hit_hint=kp.ItemHitHint.NOARGS))
 
         self.set_catalog(catalog)
         pass
@@ -112,12 +112,16 @@ class timezones(kp.Plugin):
         if parsed_input is None and len(items_chain) < 1:
             return
 
-        source = self._source_data(user_input)
-        destination = self._destination_data(source)
-        if(self.MILITARY_TIME_PICKED):
-            self.set_suggestions(self._destination_24h(source, destination), kp.Match.ANY, kp.Sort.NONE)
-        else:
-            self.set_suggestions(self._destination_ampm(source, destination), kp.Match.ANY, kp.Sort.NONE)
+        suggestions = []
+        for timezone_picked in self.TIME_ZONE_PICKED:
+            source = self._source_data(user_input, timezone_picked)
+            destination = self._destination_data(source, timezone_picked)
+            if(self.MILITARY_TIME_PICKED):
+                suggestions.append(self._destination_24h(source, destination))
+            else:
+                suggestions.append(self._destination_ampm(source, destination))
+
+        self.set_suggestions(suggestions, kp.Match.ANY, kp.Sort.NONE)
         pass
 
     def on_execute(self, item, action):
@@ -126,16 +130,13 @@ class timezones(kp.Plugin):
     def _destination_24h(self, source, destination):
         conversions = self._calculations(source, destination)
         output_result = f'{conversions["hours"]}:{conversions["minutes"]} {conversions["timezone"]}'
-        suggestions = []
-        suggestions.append(self.create_item(
+        return self.create_item(
             category=self.ITEMCAT_RESULT,
             label=output_result,
             short_desc=f'{conversions["hours"]}:{conversions["minutes"]} {conversions["timezone"]} ({conversions["difference_short"]}) {conversions["additional"]}',
             target=output_result,
             args_hint=kp.ItemArgsHint.FORBIDDEN,
-            hit_hint=kp.ItemHitHint.IGNORE))
-
-        return suggestions
+            hit_hint=kp.ItemHitHint.IGNORE)
 
     def _destination_ampm(self, source, destination):
         conversions = self._calculations(source, destination)
@@ -151,16 +152,13 @@ class timezones(kp.Plugin):
             hours = '12'
 
         output_result = f'{hours}:{conversions["minutes"]}{meridiem} {conversions["timezone"]}'
-        suggestions = []
-        suggestions.append(self.create_item(
+        return self.create_item(
             category=self.ITEMCAT_RESULT,
             label=output_result,
             short_desc=f'{hours}:{conversions["minutes"]}{meridiem} {conversions["timezone"]} ({conversions["difference_short"]}) {conversions["additional"]}',
             target=output_result,
             args_hint=kp.ItemArgsHint.FORBIDDEN,
-            hit_hint=kp.ItemHitHint.IGNORE))
-
-        return suggestions
+            hit_hint=kp.ItemHitHint.IGNORE)
 
     def _calculations(self, source, destination):
         new_hours = int(source['hour'])
@@ -202,9 +200,9 @@ class timezones(kp.Plugin):
         filter_results = filter(lambda x: x['timezone'] == timezone_to_find, self.timezones)
         return list(filter_results)[-1]
 
-    def _destination_data(self, source):
+    def _destination_data(self, source, timezone_picked):
         input_timezone = self._find_timezone(source['timezone'])
-        output_timezone = self._find_timezone(self.TIME_ZONE_PICKED)
+        output_timezone = self._find_timezone(timezone_picked)
 
         difference_hours = output_timezone['difference_hours'] - input_timezone['difference_hours']
         difference_minutes = output_timezone['difference_minutes'] - input_timezone['difference_minutes']
@@ -215,13 +213,13 @@ class timezones(kp.Plugin):
         response['difference_minutes'] = difference_minutes
         return response
 
-    def _source_data(self, user_input):
+    def _source_data(self, user_input, timezone_picked):
         user_input = user_input.upper()
         response = dict()
         response['min'] = '00'
         response['hour'] = '0'
         response['meridiem'] = ''
-        response['timezone'] = self.TIME_ZONE_PICKED
+        response['timezone'] = timezone_picked
         response['military'] = True
 
         h12 = self._12H_regex()
@@ -293,5 +291,5 @@ class timezones(kp.Plugin):
 
         self.TIME_ZONE_PICKED = settings.get_stripped(
             "output_timezone", "main",
-            fallback=self.TIME_ZONE_DEFAULT)
+            fallback=self.TIME_ZONE_DEFAULT).split()
         pass
