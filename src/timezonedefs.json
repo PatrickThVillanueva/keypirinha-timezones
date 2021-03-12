@@ -1,6 +1,27 @@
 {
     "timezones":[
         {
+            "timezone": "PST",
+            "desc": "Pacific Summer Time",
+            "difference_hours": -8,
+            "difference_minutes": 0,
+            "aliases": []
+        },
+        {
+            "timezone": "PDT",
+            "desc": "Pacific Daylight Time",
+            "difference_hours": -7,
+            "difference_minutes": 0,
+            "aliases": []
+        },
+        {
+            "timezone": "EST",
+            "desc": "Eastern Standard Time",
+            "difference_hours": -5,
+            "difference_minutes": 0,
+            "aliases": []
+        },
+        {
             "timezone": "UTC",
             "desc": "Universal Time, Coordinated",
             "difference_hours": 0,
@@ -27,32 +48,18 @@
             "difference_hours": 2,
             "difference_minutes": 0,
             "aliases": []
-        },
+        },        
         {
-            "timezone": "PDT",
-            "desc": "Pacific Daylight Time",
-            "difference_hours": -7,
-            "difference_minutes": 0,
-            "aliases": []
-        },
-        {
-            "timezone": "PST",
-            "desc": "Pacific Summer Time",
-            "difference_hours": -8,
-            "difference_minutes": 0,
+            "timezone": "AFT",
+            "desc": "Afghanistan Time",
+            "difference_hours": 4,
+            "difference_minutes": 30,
             "aliases": []
         },
         {
             "timezone": "JST",
             "desc": "Japan Standard Time",
             "difference_hours": 9,
-            "difference_minutes": 0,
-            "aliases": []
-        },
-        {
-            "timezone": "EST",
-            "desc": "Eastern Standard Time",
-            "difference_hours": -5,
             "difference_minutes": 0,
             "aliases": []
         }

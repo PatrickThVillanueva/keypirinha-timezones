@@ -173,13 +173,6 @@ class timezones(kp.Plugin):
 
         additional = ''
         new_hours = new_hours + destination['difference_hours']
-        if (new_hours > 23):
-            additional = '(Next day)'
-            new_hours = abs(24 - new_hours)
-        elif (new_hours < 0):
-            additional = '(Previous day)'
-            new_hours = new_hours + 24
-
         new_minutes = int(source['min'])
         new_minutes = new_minutes + destination['difference_minutes']
         if (new_minutes > 59):
@@ -188,6 +181,13 @@ class timezones(kp.Plugin):
         elif (new_minutes < 0):
             new_minutes = 60 + new_minutes
             new_hours = new_hours - 1
+        
+        if (new_hours > 23):
+            additional = '(Next day)'
+            new_hours = abs(24 - new_hours)
+        elif (new_hours < 0):
+            additional = '(Previous day)'
+            new_hours = new_hours + 24
         dif = destination["difference_hours"]
         dif = f'+{dif}' if (dif >= 0) else f'{dif}'
 
