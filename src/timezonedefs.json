@@ -5,63 +5,56 @@
             "desc": "Universal Time, Coordinated",
             "difference_hours": 0,
             "difference_minutes": 0,
-            "aliases": ["utc", "z", "zulu"]
+            "aliases": ["zulu"]
         },
         {
             "timezone": "GMT",
             "desc": "Greenwich Mean Time",
             "difference_hours": 0,
             "difference_minutes": 0,
-            "aliases": ["gmt"]
+            "aliases": []
         },
         {
             "timezone": "CET",
             "desc": "Central European Time",
             "difference_hours": 1,
             "difference_minutes": 0,
-            "aliases": ["cet"]
+            "aliases": []
         },
         {
             "timezone": "CEST",
             "desc": "Central European Summer Time",
             "difference_hours": 2,
             "difference_minutes": 0,
-            "aliases": ["cest"]
+            "aliases": []
         },
         {
             "timezone": "PDT",
             "desc": "Pacific Daylight Time",
             "difference_hours": -7,
             "difference_minutes": 0,
-            "aliases": ["pdt"]
+            "aliases": []
         },
         {
             "timezone": "PST",
             "desc": "Pacific Summer Time",
             "difference_hours": -8,
             "difference_minutes": 0,
-            "aliases": ["pst"]
-        },
-        {
-            "timezone": "PT",
-            "desc": "Pacific Time",
-            "difference_hours": -8,
-            "difference_minutes": 0,
-            "aliases": ["pt"]
+            "aliases": []
         },
         {
             "timezone": "JST",
             "desc": "Japan Standard Time",
             "difference_hours": 9,
             "difference_minutes": 0,
-            "aliases": ["jst"]
+            "aliases": []
         },
         {
             "timezone": "EST",
             "desc": "Eastern Standard Time",
             "difference_hours": -5,
             "difference_minutes": 0,
-            "aliases": ["est"]
+            "aliases": []
         }
     ]
 }
