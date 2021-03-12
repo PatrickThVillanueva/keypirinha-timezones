@@ -16,6 +16,9 @@ class timezones(kp.Plugin):
     MILITARY_TIME_DEFAULT = True
     MILITARY_TIME_PICKED = MILITARY_TIME_DEFAULT
 
+    SEPARATORS_DEFAULT = "to in"
+    SEPARATORS_PICKED = SEPARATORS_DEFAULT
+
     TIME_ZONE_DEFAULT = "UTC"
     TIME_ZONE_PICKED = TIME_ZONE_DEFAULT
 
@@ -264,7 +267,7 @@ class timezones(kp.Plugin):
         return r'(:([0-5][0-9]))'
 
     def _24H_regex(self):
-        return r'([0?1][0-9]|2[0-3])' 
+        return r'([0-1]?[0-9]|2[0-3])' 
 
     def _12H_regex(self):
         return r'(1[0-2]|0?[1-9])'
@@ -275,7 +278,11 @@ class timezones(kp.Plugin):
     def _timezones_regex(self, time_zones_array):
         attrs = [o['timezone'] for o in time_zones_array]
         pipes = '|'.join(attrs)
-        return '\s*(' + pipes + ')'
+        return f'\s*({pipes})'
+
+    def _separators_regex(self):
+        separators = '|'.join(self.SEPARATORS_PICKED)
+        return f'\s*({separators})'
 
     def _load_settings(self):
         settings = self.load_settings()
@@ -292,4 +299,8 @@ class timezones(kp.Plugin):
         self.TIME_ZONE_PICKED = settings.get_stripped(
             "output_timezone", "main",
             fallback=self.TIME_ZONE_DEFAULT).split()
+
+        self.SEPARATORS_PICKED = settings.get_stripped(
+            "separators", "main",
+            fallback=self.SEPARATORS_DEFAULT).split()
         pass
