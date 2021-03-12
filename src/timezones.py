@@ -59,7 +59,7 @@ class timezones(kp.Plugin):
                 if not new_measure_name in self.timezones:
                     self.timezones[new_measure_name] = item
                 for alias in item["aliases"]:
-                    alias = alias.lower()
+                    alias = alias.upper()
                     if alias in self.all_units:
                         continue
                     else:
@@ -108,7 +108,7 @@ class timezones(kp.Plugin):
 
     def on_suggest(self, user_input, items_chain):
         reg = self.get_regex(self.timezones)
-        parsed_input = reg.match(user_input)
+        parsed_input = reg.match(user_input.upper())
         if parsed_input is None and len(items_chain) < 1:
             return
 
@@ -165,9 +165,9 @@ class timezones(kp.Plugin):
     def _calculations(self, source, destination):
         new_hours = int(source['hour'])
         if (not bool(source['military'])):
-            if (source['meridiem'].lower() == "am" and new_hours == 12):
+            if (source['meridiem'].upper() == "AM" and new_hours == 12):
                 new_hours = 0
-            elif (source['meridiem'].lower() == "pm" and new_hours < 12):
+            elif (source['meridiem'].upper() == "PM" and new_hours < 12):
                 new_hours = new_hours + 12
 
         additional = ''
@@ -216,6 +216,7 @@ class timezones(kp.Plugin):
         return response
 
     def _source_data(self, user_input):
+        user_input = user_input.upper()
         response = dict()
         response['min'] = '00'
         response['hour'] = '0'
@@ -281,7 +282,7 @@ class timezones(kp.Plugin):
     def _load_settings(self):
         settings = self.load_settings()
         for config_section in settings.sections():
-            if config_section.startswith("#") or not config_section.lower().startswith("timezone/"):
+            if config_section.startswith("#") or not config_section.upper().startswith("TIMEZONE/"):
                 continue
             new_timezone = config_section[len("timezone/"):]
 
