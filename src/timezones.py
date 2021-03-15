@@ -183,11 +183,17 @@ class timezones(kp.Plugin):
             new_hours = new_hours - 1
         
         if (new_hours > 23):
-            additional = '(Next day)'
-            new_hours = abs(24 - new_hours)
+            days = 0
+            while(new_hours > 23):
+                days = days + 1
+                new_hours = abs(24 - new_hours)
+            additional = f'(+{days} days)'
         elif (new_hours < 0):
-            additional = '(Previous day)'
-            new_hours = new_hours + 24
+            days = 0
+            while(new_hours < 0):
+                days = days + 1
+                new_hours = 24 + new_hours
+            additional = f'(-{days} days)'
         dif = destination["difference_hours"]
         dif = f'+{dif}' if (dif >= 0) else f'{dif}'
 

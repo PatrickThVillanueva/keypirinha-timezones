@@ -1,6 +1,13 @@
 {
     "timezones":[
         {
+            "timezone": "BIT",
+            "desc": "Baker Island Time",
+            "difference_hours": -12,
+            "difference_minutes": 0,
+            "aliases": []
+        },
+        {
             "timezone": "PST",
             "desc": "Pacific Summer Time",
             "difference_hours": -8,
@@ -60,6 +67,13 @@
             "timezone": "JST",
             "desc": "Japan Standard Time",
             "difference_hours": 9,
+            "difference_minutes": 0,
+            "aliases": []
+        },
+        {
+            "timezone": "LINT",
+            "desc": "Line Islands Time",
+            "difference_hours": 14,
             "difference_minutes": 0,
             "aliases": []
         }
