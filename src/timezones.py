@@ -93,18 +93,21 @@ class timezones(kp.Plugin):
     def on_catalog(self):
         self._load_settings()
         catalog = []
-        # output_timezone = self._find_timezone(self.TIME_ZONE_PICKED)
-        # for t in self.timezones:
-        #     diff = t['difference_hours'] - output_timezone['difference_hours']
-        #     if (diff > 0):
-        #         diff = f"+{diff}"
-        #     catalog.append(self.create_item(
-        #         category=kp.ItemCategory.KEYWORD,
-        #         label=f"Timezone: {t['timezone']}",
-        #         short_desc=f"{t['desc']} ({self.TIME_ZONE_PICKED} {diff})",
-        #         target=t['timezone'],
-        #         args_hint=kp.ItemArgsHint.FORBIDDEN,
-        #         hit_hint=kp.ItemHitHint.NOARGS))
+
+        output_timezones = self.TIME_ZONE_PICKED
+        for output in output_timezones:
+            matching_timezone = self._find_timezone(output)
+            for t in self.timezones:
+                diff = t['difference_hours'] - matching_timezone['difference_hours']
+                if (diff > 0):
+                    diff = f"+{diff}"
+                catalog.append(self.create_item(
+                    category=kp.ItemCategory.KEYWORD,
+                    label=f"Timezone: {t['timezone']}",
+                    short_desc=f"{t['desc']} ({diff} {matching_timezone['timezone']})",
+                    target=t['timezone'],
+                    args_hint=kp.ItemArgsHint.FORBIDDEN,
+                    hit_hint=kp.ItemHitHint.NOARGS))
 
         self.set_catalog(catalog)
         pass
@@ -303,7 +306,7 @@ class timezones(kp.Plugin):
         )
 
         self.TIME_ZONE_PICKED = settings.get_stripped(
-            "output_timezone", "main",
+            "output_timezones", "main",
             fallback=self.TIME_ZONE_DEFAULT).split()
 
         self.SEPARATORS_PICKED = settings.get_stripped(
