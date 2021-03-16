@@ -285,8 +285,13 @@ class timezones(kp.Plugin):
         return r'\s*([AaPp][Mm])'
 
     def _timezones_regex(self, time_zones_array):
-        attrs = [o['timezone'] for o in time_zones_array]
-        pipes = '|'.join(attrs)
+        flattened = []
+        for i in time_zones_array:
+            flattened.append(i['timezone'])
+            for j in i['aliases']:
+                flattened.append(j)
+                
+        pipes = '|'.join(flattened)
         return f'\s*({pipes})'
 
     def _separators_regex(self):
