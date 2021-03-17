@@ -197,8 +197,16 @@ class timezones(kp.Plugin):
                 days = days + 1
                 new_hours = 24 + new_hours
             additional = f'(-{days} days)'
+
         dif = destination["difference_hours"]
+        dif_minutes = ''
+        if (destination['difference_minutes'] != 0):
+            dif_minutes = destination['difference_minutes']
+            if (dif < 0 or dif_minutes < 0):
+                dif_minutes = dif_minutes * -1
+
         dif = f'+{dif}' if (dif >= 0) else f'{dif}'
+        dif = f'{dif}:{dif_minutes}'
 
         response = dict()
         response['hours'] = str(new_hours)

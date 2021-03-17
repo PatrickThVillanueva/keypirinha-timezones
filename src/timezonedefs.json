@@ -43,13 +43,6 @@
             "aliases": []
         },
         {
-            "timezone": "A",
-            "desc": "Alpha Time Zone",
-            "difference_hours": 1,
-            "difference_minutes": 0,
-            "aliases": []
-        },
-        {
             "timezone": "CET",
             "desc": "Central European Time",
             "difference_hours": 1,
