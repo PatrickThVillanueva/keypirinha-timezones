@@ -117,7 +117,6 @@ class timezones(kp.Plugin):
         parsed_input = reg.match(user_input.upper())
         if parsed_input is None and len(items_chain) < 1:
             return
-
         suggestions = []
         for timezone_picked in self.TIME_ZONE_PICKED:
             source = self._source_data(user_input, timezone_picked)
@@ -202,8 +201,8 @@ class timezones(kp.Plugin):
         dif_minutes = ''
         if (destination['difference_minutes'] != 0):
             dif_minutes = f":{destination['difference_minutes']}"
-            if (dif < 0 or dif_minutes < 0):
-                dif_minutes = f":{destination['difference_minutes']* -1}" 
+            if (int(dif) < 0 or int(destination['difference_minutes']) < 0):
+                dif_minutes = f":{str(destination['difference_minutes']* -1).zfill(2)}" 
 
         dif = f'+{dif}' if (dif >= 0) else f'{dif}'
         dif = f'{dif}{dif_minutes}'
@@ -220,7 +219,9 @@ class timezones(kp.Plugin):
         filter_results = list(filter(lambda x: x['timezone'] == timezone_to_find, self.timezones))
         if (len(filter_results) == 0):
             filter_results = list(filter(lambda x: timezone_to_find in map(lambda x:x.upper(),x['aliases']), self.timezones))
-        return filter_results[-1]
+        if (len(filter_results) > 0):
+            return filter_results[-1]
+        return {}
 
     def _destination_data(self, source, timezone_picked):
         input_timezone = self._find_timezone(source['timezone'])
@@ -314,6 +315,18 @@ class timezones(kp.Plugin):
             if config_section.startswith("#") or not config_section.upper().startswith("TIMEZONE/"):
                 continue
             new_timezone = config_section[len("timezone/"):]
+            if (self._find_timezone(new_timezone) == {}): # New timezone
+                new_obj = dict()
+                new_obj['timezone'] = new_timezone
+                new_obj['desc'] = settings.get_stripped("desc", section=config_section, fallback=f"Timezone for {new_timezone}")
+                new_obj['difference_hours'] = int(settings.get_stripped("difference_hours", section=config_section, fallback=0))
+                new_obj['difference_minutes'] = int(settings.get_stripped("difference_minutes", section=config_section, fallback=0))
+                aliases = settings.get_stripped("aliases", section=config_section, fallback=None)
+                if aliases:
+                    new_obj['aliases'] = settings.get_stripped('aliases', section=config_section, fallback=None).split(",")
+                self.timezones.append(new_obj)
+            else:
+                print("")
 
         self.MILITARY_TIME_PICKED = settings.get_bool(
             "use_military_time", "main", 
