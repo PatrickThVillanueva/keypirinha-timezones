@@ -315,7 +315,8 @@ class timezones(kp.Plugin):
             if config_section.startswith("#") or not config_section.upper().startswith("TIMEZONE/"):
                 continue
             new_timezone = config_section[len("timezone/"):]
-            if (self._find_timezone(new_timezone) == {}): # New timezone
+            match = self._find_timezone(new_timezone)
+            if (match == {}): # New timezone
                 new_obj = dict()
                 new_obj['timezone'] = new_timezone
                 new_obj['desc'] = settings.get_stripped("desc", section=config_section, fallback=f"Timezone for {new_timezone}")
@@ -325,8 +326,14 @@ class timezones(kp.Plugin):
                 if aliases:
                     new_obj['aliases'] = settings.get_stripped('aliases', section=config_section, fallback=None).split(",")
                 self.timezones.append(new_obj)
-            else:
-                print("")
+            else: # Existing timezone
+                index = self.timezones.index(match)
+                aliases = settings.get_stripped("aliases", section=config_section, fallback=None).split(",")
+                if aliases:
+                    for s in settings.get_stripped("aliases", section=config_section, fallback=None).split(","):
+                        if (s not in self.timezones[index]['aliases']):
+                            self.timezones[index]['aliases'].append(s)
+
 
         self.MILITARY_TIME_PICKED = settings.get_bool(
             "use_military_time", "main", 
