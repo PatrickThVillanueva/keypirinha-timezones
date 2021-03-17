@@ -23,7 +23,7 @@ class timezones(kp.Plugin):
     TIME_ZONE_PICKED = TIME_ZONE_DEFAULT
 
     TIMEZONEDEF_FILE = "timezonedefs.json"
-
+# https://en.wikipedia.org/wiki/List_of_time_zone_abbreviations
     def __init__(self):
         super().__init__()
 
@@ -201,12 +201,12 @@ class timezones(kp.Plugin):
         dif = destination["difference_hours"]
         dif_minutes = ''
         if (destination['difference_minutes'] != 0):
-            dif_minutes = destination['difference_minutes']
+            dif_minutes = f":{destination['difference_minutes']}"
             if (dif < 0 or dif_minutes < 0):
-                dif_minutes = dif_minutes * -1
+                dif_minutes = f":{destination['difference_minutes']* -1}" 
 
         dif = f'+{dif}' if (dif >= 0) else f'{dif}'
-        dif = f'{dif}:{dif_minutes}'
+        dif = f'{dif}{dif_minutes}'
 
         response = dict()
         response['hours'] = str(new_hours)
@@ -217,8 +217,10 @@ class timezones(kp.Plugin):
         return response
 
     def _find_timezone(self, timezone_to_find):
-        filter_results = filter(lambda x: x['timezone'] == timezone_to_find, self.timezones)
-        return list(filter_results)[-1]
+        filter_results = list(filter(lambda x: x['timezone'] == timezone_to_find, self.timezones))
+        if (len(filter_results) == 0):
+            filter_results = list(filter(lambda x: timezone_to_find in map(lambda x:x.upper(),x['aliases']), self.timezones))
+        return filter_results[-1]
 
     def _destination_data(self, source, timezone_picked):
         input_timezone = self._find_timezone(source['timezone'])
@@ -297,7 +299,7 @@ class timezones(kp.Plugin):
         for i in time_zones_array:
             flattened.append(i['timezone'])
             for j in i['aliases']:
-                flattened.append(j)
+                flattened.append(j.upper())
                 
         pipes = '|'.join(flattened)
         return f'\s*({pipes})'
