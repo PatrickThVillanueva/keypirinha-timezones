@@ -23,7 +23,6 @@ class timezones(kp.Plugin):
     TIME_ZONE_PICKED = TIME_ZONE_DEFAULT
 
     TIMEZONEDEF_FILE = "timezonedefs.json"
-# https://en.wikipedia.org/wiki/List_of_time_zone_abbreviations
     def __init__(self):
         super().__init__()
 
