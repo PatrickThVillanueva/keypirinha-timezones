@@ -118,13 +118,26 @@ class timezones(kp.Plugin):
         if parsed_input is None and len(items_chain) < 1:
             return
         suggestions = []
-        for timezone_picked in self.TIME_ZONE_PICKED:
-            source = self._source_data(user_input, timezone_picked)
+        timezones_reg = self._timezones_regex(self.timezones)
+        separators_reg = self._separators_regex()
+        joined_reg = separators_reg + '{1}' + timezones_reg + '+\s*$'
+        if (re.search(joined_reg, user_input.upper())): #user specified output
+            r1 = re.findall(joined_reg, user_input.upper())
+            timezone_picked = r1[-1][-1]
+            source = self._source_data(user_input.upper(), timezone_picked)
             destination = self._destination_data(source, timezone_picked)
             if(self.MILITARY_TIME_PICKED):
                 suggestions.append(self._destination_24h(source, destination))
             else:
                 suggestions.append(self._destination_ampm(source, destination))
+        else: #default output
+            for timezone_picked in self.TIME_ZONE_PICKED:
+                source = self._source_data(user_input.upper(), timezone_picked)
+                destination = self._destination_data(source, timezone_picked)
+                if(self.MILITARY_TIME_PICKED):
+                    suggestions.append(self._destination_24h(source, destination))
+                else:
+                    suggestions.append(self._destination_ampm(source, destination))
 
         self.set_suggestions(suggestions, kp.Match.ANY, kp.Sort.NONE)
         pass
@@ -280,7 +293,8 @@ class timezones(kp.Plugin):
         minutes = self._minutes_regex()
         ampm = self._am_pm_regex()
         timezones = self._timezones_regex(time_zones_array)
-        INPUT_PARSER = f'^(({h24}{minutes}?)|({h12}{minutes}?{ampm}))+\s*{timezones}?$'
+        separators = self._separators_regex()
+        INPUT_PARSER = f'^(({h24}{minutes}?)|({h12}{minutes}?{ampm}))+{timezones}?\s*({separators}{timezones})?$'
         return re.compile(INPUT_PARSER)
 
     def _minutes_regex(self):
@@ -306,8 +320,10 @@ class timezones(kp.Plugin):
         return f'\s*({pipes})'
 
     def _separators_regex(self):
-        separators = '|'.join(self.SEPARATORS_PICKED)
-        return f'\s*({separators})'
+        separators = []
+        for s in self.SEPARATORS_PICKED:
+            separators.append(s.upper())
+        return f'\s*({"|".join(separators)})'
 
     def _load_settings(self):
         settings = self.load_settings()
