@@ -230,7 +230,8 @@ class timezones(kp.Plugin):
     def _find_timezone(self, timezone_to_find):
         filter_results = list(filter(lambda x: x['timezone'] == timezone_to_find, self.timezones))
         if (len(filter_results) == 0):
-            filter_results = list(filter(lambda x: timezone_to_find in map(lambda x:x.upper(),x['aliases']), self.timezones))
+            relevant_timezones = list(filter(lambda x: 'aliases' in x and len(x['aliases']) > 0, self.timezones))
+            filter_results = list(filter(lambda x: timezone_to_find in x['aliases'], relevant_timezones))
         if (len(filter_results) > 0):
             return filter_results[-1]
         return {}
@@ -238,7 +239,7 @@ class timezones(kp.Plugin):
     def _destination_data(self, source, timezone_picked):
         input_timezone = self._find_timezone(source['timezone'])
         output_timezone = self._find_timezone(timezone_picked)
-
+        
         difference_hours = output_timezone['difference_hours'] - input_timezone['difference_hours']
         difference_minutes = output_timezone['difference_minutes'] - input_timezone['difference_minutes']
         
@@ -312,8 +313,9 @@ class timezones(kp.Plugin):
         flattened = []
         for i in time_zones_array:
             flattened.append(i['timezone'])
-            for j in i['aliases']:
-                flattened.append(j.upper())
+            if ('aliases' in i and len(i['aliases']) > 0):
+                for j in i['aliases']:
+                    flattened.append(j.upper())
                 
         pipes = '|'.join(flattened)
         return f'\s*({pipes})'
@@ -339,7 +341,9 @@ class timezones(kp.Plugin):
                 new_obj['difference_minutes'] = int(settings.get_stripped("difference_minutes", section=config_section, fallback=0))
                 aliases = settings.get_stripped("aliases", section=config_section, fallback=None)
                 if aliases:
-                    new_obj['aliases'] = settings.get_stripped('aliases', section=config_section, fallback=None).split(",")
+                    new_obj['aliases'] = []
+                    for a in settings.get_stripped('aliases', section=config_section, fallback=None).split(","):
+                        new_obj['aliases'].append(a.upper())
                 self.timezones.append(new_obj)
             else: # Existing timezone
                 index = self.timezones.index(match)
@@ -347,8 +351,7 @@ class timezones(kp.Plugin):
                 if aliases:
                     for s in settings.get_stripped("aliases", section=config_section, fallback=None).split(","):
                         if (s not in self.timezones[index]['aliases']):
-                            self.timezones[index]['aliases'].append(s)
-
+                            self.timezones[index]['aliases'].append(s.upper())
 
         self.MILITARY_TIME_PICKED = settings.get_bool(
             "use_military_time", "main", 
