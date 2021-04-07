@@ -89,15 +89,14 @@ class timezones(kp.Plugin):
         self.set_catalog(catalog)
         pass
 
-#Error when typed 27
     def on_suggest(self, user_input, items_chain):
-        # if (user_input == 'now'):
-        #     user_input = strftime("%H:%M UTC", gmtime())
         reg = self.get_regex(self.timezones)
         parsed_input = reg.match(user_input.upper())
         if parsed_input is None and len(items_chain) < 1:
             return
 
+        if ('now' in user_input):
+            user_input = re.sub(self._now_regex(), strftime("%H:%M UTC", gmtime()), user_input)
         suggestions = []
         timezones_reg = self._timezones_regex(self.timezones)
         separators_reg = self._separators_regex()
