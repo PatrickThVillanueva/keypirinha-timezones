@@ -52,6 +52,7 @@ class timezones(kp.Plugin):
         return defs
 
     def on_start(self):
+        self.logo = 'res://%s/%s'%(self.package_full_name(),'globe-with-meridians.png')
         defs = self.read_defs(self.TIMEZONEDEF_FILE)
         self.timezones = defs['timezones']
         self.set_actions(self.ITEMCAT_RESULT, [
@@ -83,6 +84,7 @@ class timezones(kp.Plugin):
                     label=f"Timezone: {t['timezone']}",
                     short_desc=f"{t['desc']} ({diff} {matching_timezone['timezone']})",
                     target=t['timezone'],
+                    icon_handle=self.load_icon(self.logo),
                     args_hint=kp.ItemArgsHint.FORBIDDEN,
                     hit_hint=kp.ItemHitHint.NOARGS))
 
@@ -133,6 +135,7 @@ class timezones(kp.Plugin):
             label=output_result,
             short_desc=f'{conversions["hours"]}:{conversions["minutes"]} {conversions["timezone"]} ({conversions["difference_short"]}) {conversions["additional"]}',
             target=output_result,
+            icon_handle=self.load_icon(self.logo),
             args_hint=kp.ItemArgsHint.FORBIDDEN,
             hit_hint=kp.ItemHitHint.IGNORE)
 
