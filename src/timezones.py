@@ -277,7 +277,7 @@ class timezones(kp.Plugin):
         ampm = self._am_pm_regex()
         timezones = self._timezones_regex(time_zones_array)
         separators = self._separators_regex()
-        INPUT_PARSER = f'^(({h24}{minutes}?)|({h12}{minutes}?{ampm}))+{timezones}?\s*({separators}{timezones})?$'
+        INPUT_PARSER = f'^(({now})|({h24}{minutes}?)|({h12}{minutes}?{ampm}))?{timezones}?\s*({separators}{timezones})?$'
         return re.compile(INPUT_PARSER)
 
     def _minutes_regex(self):
