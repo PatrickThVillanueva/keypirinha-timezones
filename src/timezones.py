@@ -8,6 +8,7 @@ import sys
 import locale
 import re
 import json
+from time import gmtime, strftime
 
 class timezones(kp.Plugin):
     ITEMCAT_RESULT = kp.ItemCategory.USER_BASE + 1
@@ -50,32 +51,9 @@ class timezones(kp.Plugin):
 
         return defs
 
-    def add_defs(self, defs):
-        if "timezones" in defs:
-            def_timezones = defs["timezones"]
-            for item in def_timezones.items():
-                new_timezone_name = item["timezone"]
-                new_timezone_desc = item["desc"]
-                new_timezone_hours = item["difference_hours"]
-                new_timezone_minutes = item["difference_minutes"]
-                if not new_measure_name in self.timezones:
-                    self.timezones[new_measure_name] = item
-                for alias in item["aliases"]:
-                    alias = alias.upper()
-                    if alias in self.all_units:
-                        continue
-                    else:
-                        timezone = item["aliases"]
-                        if not alias in timezone["aliases"]:
-                            timezone["aliases"] = timezone["aliases"] + [alias]
-                    self.all_units[alias] = measure
-                    self.measure_aliases[new_measure_name][alias] = measure
-
     def on_start(self):
         defs = self.read_defs(self.TIMEZONEDEF_FILE)
         self.timezones = defs['timezones']
-        self.add_defs(self.TIMEZONEDEF_FILE)
-
         self.set_actions(self.ITEMCAT_RESULT, [
             self.create_action(
                 name="copy",
@@ -111,15 +89,19 @@ class timezones(kp.Plugin):
         self.set_catalog(catalog)
         pass
 
+#Error when typed 27
     def on_suggest(self, user_input, items_chain):
+        # if (user_input == 'now'):
+        #     user_input = strftime("%H:%M UTC", gmtime())
         reg = self.get_regex(self.timezones)
         parsed_input = reg.match(user_input.upper())
         if parsed_input is None and len(items_chain) < 1:
             return
+
         suggestions = []
         timezones_reg = self._timezones_regex(self.timezones)
         separators_reg = self._separators_regex()
-        joined_reg = separators_reg + '{1}' + timezones_reg + '+\s*$'
+        joined_reg = separators_reg + '{1}' + timezones_reg + '+\s*$' # {1} to ensure there is only one separator
         if (re.search(joined_reg, user_input.upper())): #user specified output
             r1 = re.findall(joined_reg, user_input.upper())
             timezone_picked = r1[-1][-1]
@@ -263,12 +245,12 @@ class timezones(kp.Plugin):
         ampm = self._am_pm_regex()
         h12_regex = f'{h12}{minutes}?{ampm}'
 
-        if (re.search(self._minutes_regex(), user_input)):
-            r1 = re.findall(self._minutes_regex(), user_input)
+        if (re.search(minutes, user_input)):
+            r1 = re.findall(minutes, user_input)
             response['min'] = r1[-1][-1]
 
-        if (re.search(self._am_pm_regex(), user_input)):
-            r1 = re.findall(self._am_pm_regex(), user_input)
+        if (re.search(ampm, user_input)):
+            r1 = re.findall(ampm, user_input)
             response['meridiem'] = r1[-1]
             response['military'] = False
 
@@ -290,6 +272,7 @@ class timezones(kp.Plugin):
     def get_regex(self, time_zones_array):
         h24 = self._24H_regex()
         h12 = self._12H_regex()
+        now = self._now_regex()
         minutes = self._minutes_regex()
         ampm = self._am_pm_regex()
         timezones = self._timezones_regex(time_zones_array)
@@ -301,10 +284,13 @@ class timezones(kp.Plugin):
         return r'(:([0-5][0-9]))'
 
     def _24H_regex(self):
-        return r'([0-1]?[0-9]|2[0-3])' 
+        return r'([0-1]?[0-9]|2[0-3])'
 
     def _12H_regex(self):
         return r'(1[0-2]|0?[1-9])'
+
+    def _now_regex(self):
+        return r'([Nn][Oo][Ww])'
 
     def _am_pm_regex(self):
         return r'\s*([AaPp][Mm])'
@@ -328,9 +314,11 @@ class timezones(kp.Plugin):
 
     def _load_settings(self):
         settings = self.load_settings()
+        section_counter = 0
         for config_section in settings.sections():
             if config_section.startswith("#") or not config_section.upper().startswith("TIMEZONE/"):
                 continue
+            section_counter = section_counter + 1
             new_timezone = config_section[len("timezone/"):]
             match = self._find_timezone(new_timezone)
             if (match == {}): # New timezone
@@ -365,4 +353,6 @@ class timezones(kp.Plugin):
         self.SEPARATORS_PICKED = settings.get_stripped(
             "separators", "main",
             fallback=self.SEPARATORS_DEFAULT).split()
+
+        self.info(f"Loaded {str(section_counter)} custom timezones")
         pass
