@@ -35,6 +35,10 @@ Convert from any time, to any other timezone (provided you entered the timezones
 
 ## Change Log
 
+### v1.1
+
+* Fixed a bug that prevented custom timezones to be added
+
 ### v1.0
 
 * Created this plugin
