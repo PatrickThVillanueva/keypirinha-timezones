@@ -26,7 +26,7 @@ class timezones(kp.Plugin):
     TIMEZONEDEF_FILE = "timezonedefs.json"
     def __init__(self):
         super().__init__()
-
+#still missing custom timezones!
     def read_defs(self, defs_file):
         defs = None
         try:
@@ -332,16 +332,17 @@ class timezones(kp.Plugin):
                 aliases = settings.get_stripped("aliases", section=config_section, fallback=None)
                 if aliases:
                     new_obj['aliases'] = []
-                    for a in settings.get_stripped('aliases', section=config_section, fallback=None).split(","):
+                    for a in settings.get_stripped('aliases', section=config_section, fallback="").split(","):
                         new_obj['aliases'].append(a.upper())
                 self.timezones.append(new_obj)
             else: # Existing timezone
                 index = self.timezones.index(match)
-                aliases = settings.get_stripped("aliases", section=config_section, fallback=None).split(",")
+                aliases = settings.get_stripped("aliases", section=config_section, fallback="").split(",")
                 if aliases:
-                    for s in settings.get_stripped("aliases", section=config_section, fallback=None).split(","):
-                        if (s not in self.timezones[index]['aliases']):
-                            self.timezones[index]['aliases'].append(s.upper())
+                    for s in settings.get_stripped("aliases", section=config_section, fallback="").split(","):
+                        if ('aliases' in self.timezones[index]):
+                            if (s not in self.timezones[index]['aliases']):
+                                self.timezones[index]['aliases'].append(s.upper())
 
         self.MILITARY_TIME_PICKED = settings.get_bool(
             "use_military_time", "main", 

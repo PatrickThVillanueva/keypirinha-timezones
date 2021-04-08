@@ -1,18 +1,11 @@
 # Keypirinha Plugin: timezones
 
-This is timezones, a plugin for the
-[Keypirinha](http://keypirinha.com) launcher.
-
-**TODO:** write a brief description of this package. Optionally add a
-screenshot.
-
+Convert timezones to any other timezone using [Keypirinha](http://keypirinha.com) launcher.
 
 ## Download
 
-**TODO:** indicate where the latest `.keypirinha-package` file can be
-downloaded. For example a URL to the `releases` list like:
-https://github.com/USERNAME/keypirinha-PACKAGE/releases
-
+Go to 
+https://github.com/PatrickThVillanueva/keypirinha-timezones/releases/ and download the package from here.
 
 ## Install
 
@@ -24,47 +17,24 @@ move it to the `InstalledPackage` folder located at:
   final path would look like
   `C:\Users\%USERNAME%\AppData\Roaming\Keypirinha\InstalledPackages`)
 
+Or use the PackageControl plugin to install this
 
 ## Usage
 
-**TODO:** list the items, if any, inserted to the Catalog by the plugin(s) of
-this package. Some plugins only make suggestions, in which case a description of
-what kind of suggestions are to be expected by the user may help.
+See the current time in the world by typing `now`:
 
+![Dropdown showing the current time](/img/now.png "Dropdown showing the current time")
+
+Convert AM/PM to 24H or vice versa:
+
+![Dropdown converting AM/PM to 24H](/img/11pm.png "Dropdown converting AM/PM to 24H")
+
+Convert from any time, to any other timezone (provided you entered the timezones you are looking for)
+
+![Dropdown converting AM/PM to 24H](/img/jst.png "Dropdown converting AM/PM to 24H")
 
 ## Change Log
 
-**TODO:** describe notable changes for each release. Below is a template for
-version 1.0.
-
 ### v1.0
 
-* Added foo item
-* Fixed bug that was doing bad things when item "bar" was selected
-
-
-## License
-
-**TODO:** recommended section. Below is an example that goes with the default
-LICENSE file (MIT license). Do not forget to add your name in the `LICENSE`
-file!
-
-This package is distributed under the terms of the MIT license.
-
-
-## Credits
-
-**TODO:** optional section.
-
-
-## Contribute
-
-**TODO:** optional section. Below is a template example, based on the one found
-in Keypirinha's Packages repository.
-
-1. Check for open issues or open a fresh issue to start a discussion around a
-   feature idea or a bug.
-2. Fork this repository on GitHub to start making your changes to the **dev**
-   branch.
-3. Send a pull request.
-4. Add yourself to the *Contributors* section below (or create it if needed)!
+* Created this plugin
