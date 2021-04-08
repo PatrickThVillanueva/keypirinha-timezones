@@ -26,7 +26,7 @@ class timezones(kp.Plugin):
     TIMEZONEDEF_FILE = "timezonedefs.json"
     def __init__(self):
         super().__init__()
-#still missing custom timezones!
+
     def read_defs(self, defs_file):
         defs = None
         try:
