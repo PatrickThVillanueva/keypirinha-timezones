@@ -286,7 +286,7 @@ class timezones(kp.Plugin):
         return r'(:([0-5][0-9]))'
 
     def _24H_regex(self):
-        return r'([0-1]?[0-9]|2[0-3])'
+        return r'([01][0-9]|2[0-3])'
 
     def _12H_regex(self):
         return r'(1[0-2]|0?[1-9])'
